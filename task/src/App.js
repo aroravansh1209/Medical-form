@@ -73,6 +73,7 @@ function App() {
   const [records, setRecords] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
   const [showModal, setShowModal] = useState(false);  // State to manage modal visibility
+  const [errorMessage, setErrorMessage] = useState("");  // State to manage error message visibility
 
   // Handle input changes
   const handleChange = (e) => {
@@ -83,9 +84,15 @@ function App() {
     });
   };
 
-  // Handle form submission
+  // Handle form submission with validation
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Check for required fields (e.g., name, age, blood group)
+    if (!formData.name || !formData.age || !formData.bloodGroup || !formData.hemoglobin || !formData.mcv || !formData.mch) {
+      setErrorMessage("Please fill in all the required fields.");
+      return;
+    }
 
     // If we're editing an existing record
     if (editingIndex !== null) {
@@ -102,7 +109,7 @@ function App() {
     // Close the modal after submitting
     setShowModal(false);
 
-    // Clear form
+    // Clear form and error message
     setFormData({
       name: "",
       age: "",
@@ -113,6 +120,7 @@ function App() {
       mcv: "",
       mch: "",
     });
+    setErrorMessage("");  // Clear error message
   };
 
   // Handle edit button click
@@ -306,100 +314,106 @@ function App() {
                 </button>
               </div>
             </form>
+
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="error-message">
+                <p>{errorMessage}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* Table of records */}
       <div className="submit-form">
-      <h2>Submitted Records</h2>
-      <table border="1" cellPadding="10">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Age</th>
-            <th>Gender</th>
-            <th>Blood Group</th>
-            <th>Red Cell Count</th>
-            <th>Hemoglobin</th>
-            <th>MCV</th>
-            <th>MCH</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {records.map((record, index) => (
-            <tr key={index}>
-              <td>{record.name}</td>
-              <td>{record.age}</td>
-              <td>{record.gender}</td>
-              <td>{record.bloodGroup}</td>
-              <td>{record.redCell}</td>
-              <td>{record.hemoglobin}</td>
-              <td>{record.mcv}</td>
-              <td>{record.mch}</td>
-              <td>
-                <button onClick={() => handleEdit(index)}>Edit</button>
-                <button onClick={() => handleDelete(index)}>Delete</button>
-              </td>
+        <h2>Submitted Records</h2>
+        <table border="1" cellPadding="10">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Age</th>
+              <th>Gender</th>
+              <th>Blood Group</th>
+              <th>Red Cell Count</th>
+              <th>Hemoglobin</th>
+              <th>MCV</th>
+              <th>MCH</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {records.map((record, index) => (
+              <tr key={index}>
+                <td>{record.name}</td>
+                <td>{record.age}</td>
+                <td>{record.gender}</td>
+                <td>{record.bloodGroup}</td>
+                <td>{record.redCell}</td>
+                <td>{record.hemoglobin}</td>
+                <td>{record.mcv}</td>
+                <td>{record.mch}</td>
+                <td>
+                  <button onClick={() => handleEdit(index)}>Edit</button>
+                  <button onClick={() => handleDelete(index)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Display Mean, Mode, and Median for Hemoglobin, MCV, and MCH */}
       <h3>Statistics</h3>
-<table border="1">
-  <thead>
-    <tr>
-      <th>Parameter</th>
-      <th>Mean</th>
-      <th>Mode</th>
-      <th>Median</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Hemoglobin</td>
-      <td>{hemoglobinMean}</td>
-      <td>{hemoglobinMode.join(", ")}</td>
-      <td>{hemoglobinMedian}</td>
-    </tr>
-    <tr>
-      <td>MCV</td>
-      <td>{mcvMean}</td>
-      <td>{mcvMode.join(", ")}</td>
-      <td>{mcvMedian}</td>
-    </tr>
-    <tr>
-      <td>MCH</td>
-      <td>{mchMean}</td>
-      <td>{mchMode.join(", ")}</td>
-      <td>{mchMedian}</td>
-    </tr>
-  </tbody>
-</table>
-
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Mean</th>
+            <th>Mode</th>
+            <th>Median</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Hemoglobin</td>
+            <td>{hemoglobinMean}</td>
+            <td>{hemoglobinMode.join(", ")}</td>
+            <td>{hemoglobinMedian}</td>
+          </tr>
+          <tr>
+            <td>MCV</td>
+            <td>{mcvMean}</td>
+            <td>{mcvMode.join(", ")}</td>
+            <td>{mcvMedian}</td>
+          </tr>
+          <tr>
+            <td>MCH</td>
+            <td>{mchMean}</td>
+            <td>{mchMode.join(", ")}</td>
+            <td>{mchMedian}</td>
+          </tr>
+        </tbody>
+      </table>
 
       {/* Charts */}
       <div className="chart-download">
-      <h3>Charts</h3>
-      <Download data={records}/>
+        <h3>Charts</h3>
+        <Download data={records} />
       </div>
       <div className="chart__section">
-      <div>
-        <h4>Hemoglobin</h4>
-        <Line data={chartData("Hemoglobin Level", hemoglobinValues)} />
-      </div>
-      <div>
-        <h4>MCV</h4>
-        <Line data={chartData("MCV", mcvValues)} />
-      </div>
-      <div>
-        <h4>MCH</h4>
-        <Line data={chartData("MCH", mchValues)} />
-      </div>
+        <div>
+          <h4>Hemoglobin</h4>
+          <Line data={chartData("Hemoglobin Level", hemoglobinValues)} />
+        </div>
+        <div>
+          <h4>MCV</h4>
+          <Line data={chartData("MCV", mcvValues)} />
+        </div>
+        <div>
+          <h4>MCH</h4>
+          <Line data={chartData("MCH", mchValues)} />
+        </div>
       </div>
     </div>
   );
